@@ -2,21 +2,27 @@
 
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
-
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
-
 import html5lib
 from html5lib import treebuilders, treewalkers, serializer
 from html5lib import sanitizer
+import simplejson
 
 USAGE = '''<html><head><title>html-whitelist</html></head><body>
 <h1>html-whitelist</h1>
 <p>Wrapper around the html5lib sanitizer:</p>
 <ul>
   <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html">/whitelist?url=http://example.com/clean.html</a></li>
+  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html&json=1">/whitelist?url=http://example.com/clean.html&json=1</a></li>
+  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html&callback=foo">/whitelist?url=http://example.com/clean.html&callback=foo</a></li>
   <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html">/whitelist?url=http://example.com/dirty.html</a></li>
+  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html&json=1">/whitelist?url=http://example.com/dirty.html&json=1</a></li>
+  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html&callback=foo">/whitelist?url=http://example.com/dirty.html&callback=foo</a></li>
+
   <li><code>POST</code> /whitelist <em>(post body contains arbitrary HTML)</em></li>
+  <li><code>POST</code> /whitelist&json=1 <em>(post body contains arbitrary HTML)</em></li>
+  <li><code>POST</code> /whitelist&callback=foo <em>(post body contains arbitrary HTML)</em></li>
 </ul>
 <p><a href="http://appengine-html-whitelist.googlecode.com/">Source</a></p>
 </body></html>
@@ -37,7 +43,6 @@ class HtmlWhitelist(webapp.RequestHandler):
     url = self.request.get('url')
     if not url:
       return self._error('url required')
-    self.response.headers['Content-Type'] = 'text/html'
     content = memcache.get(url)
     if content is None:
       result = urlfetch.fetch(url)
@@ -46,12 +51,29 @@ class HtmlWhitelist(webapp.RequestHandler):
       content = result.content
       if not memcache.add(url, content, 60):
         logging.error("Memcache set of %s failed." % url)
-    self.response.out.write(self._whitelist(content))
+    as_json = self.request.get('json')
+    json_callback = self.request.get('callback')
+    content = self._whitelist(content)
+    self._print(content, as_json, json_callback)
 
   def post(self):
     """Whitelists the content included in the post body."""
-    self.response.headers['Content-Type'] = 'text/html'
-    self.response.out.write(self._whitelist(self.request.body))
+    content = self._whitelist(self.request.body)
+    as_json = self.request.get('json')
+    json_callback = self.request.get('callback')
+    self._print(content, as_json, json_callback)
+
+  def _print(self, content, as_json, json_callback):
+    if json_callback:
+      mime_type = 'text/javascript'
+      content = '%s(%s)' % (json_callback, simplejson.dumps({'html': content}))
+    elif as_json:
+      mime_type = 'text/javascript'
+      content = simplejson.dumps({'html': content})
+    else:
+      mime_type = 'text/html'
+    self.response.headers['Content-Type'] = mime_type
+    self.response.out.write(content)
     self.response.out.write("\n")
 
   def _error(self, message):
