@@ -1,52 +1,29 @@
 #!/usr/bin/python2.5
 
+import html5lib
+import logging
+import os
+import simplejson
+
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-import html5lib
+
 from html5lib import treebuilders, treewalkers, serializer
 from html5lib import sanitizer
-import logging
-import simplejson
 
-USAGE = '''<html><head><title>html-whitelist</html></head><body>
-<h1>html-whitelist</h1>
-<p>Wrapper around the html5lib sanitizer:</p>
-<ul>
-  <li><code>GET</code> <a href="/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E">/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E</a></li>
-  <li><code>GET</code> <a href="/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E&json=1">/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E&json=1</a></li>
-  <li><code>GET</code> <a href="/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E&callback=foo">/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E&callback=foo</a></li>
-</ul>
-<ul>
-  <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E">/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E</a></li>
-  <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&json=1">/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&json=1</a></li>
-  <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&callback=foo">/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&callback=foo</a></li>
-</ul>
-<ul>
-  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html">/whitelist?url=http://example.com/clean.html</a></li>
-  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html&json=1">/whitelist?url=http://example.com/clean.html&json=1</a></li>
-  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html&callback=foo">/whitelist?url=http://example.com/clean.html&callback=foo</a></li>
-</ul>
-<ul>
-  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html">/whitelist?url=http://example.com/dirty.html</a></li>
-  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html&json=1">/whitelist?url=http://example.com/dirty.html&json=1</a></li>
-  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html&callback=foo">/whitelist?url=http://example.com/dirty.html&callback=foo</a></li>
-</ul>
-<ul>
-  <li><code>POST</code> /whitelist <em>(html goes in the post body)</em></li>
-  <li><code>POST</code> /whitelist&json=1</li>
-  <li><code>POST</code> /whitelist&callback=foo</li>
-</ul>
-<p><a href="http://appengine-html-whitelist.googlecode.com/">Source</a></p>
-</body></html>
-'''
+
+TEMPLATE_DIR = 'templates'
+
 
 class Usage(webapp.RequestHandler):
   """Prints usage information in response to requests to '/'."""
   def get(self):
     self.response.headers['Content-Type'] = 'text/html'
-    self.response.out.write(USAGE)
+    path = os.path.join(os.path.dirname(__file__), TEMPLATE_DIR, 'usage.tmpl')
+    self.response.out.write(template.render(path, {}))
 
 
 class HtmlWhitelist(webapp.RequestHandler):
@@ -108,7 +85,7 @@ class HtmlWhitelist(webapp.RequestHandler):
     tree = parser.parse(content)
     body = tree.getElementsByTagName('body')[0]
     return ''.join([elem.toxml() for elem in body.childNodes])
-    
+
   def _get_url(self, url):
     """Retrieves a URL and caches the results.
 
@@ -126,7 +103,7 @@ class HtmlWhitelist(webapp.RequestHandler):
     return content
 
 application = webapp.WSGIApplication([('/whitelist/?', HtmlWhitelist),
-                                      ('/', Usage)], 
+                                      ('/', Usage)],
                                      debug=True)
 
 
