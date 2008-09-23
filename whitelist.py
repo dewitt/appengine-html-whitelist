@@ -7,6 +7,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 import html5lib
 from html5lib import treebuilders, treewalkers, serializer
 from html5lib import sanitizer
+import logging
 import simplejson
 
 USAGE = '''<html><head><title>html-whitelist</html></head><body>
