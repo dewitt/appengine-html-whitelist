@@ -4,32 +4,54 @@
   </head>
   <body>
     <h1>html-whitelist</h1>
-    <p>Wrapper around the html5lib sanitizer:</p>
-    <ul>
-      <li><code>GET</code> <a href="/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E">/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E</a></li>
-      <li><code>GET</code> <a href="/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E&json=1">/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E&json=1</a></li>
-      <li><code>GET</code> <a href="/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E&callback=foo">/whitelist?content=%3Cp%3EThis+should+be+whitelisted%3C/p%3E&callback=foo</a></li>
-    </ul>
-    <ul>
-      <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E">/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E</a></li>
-      <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&json=1">/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&json=1</a></li>
-      <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&callback=foo">/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&callback=foo</a></li>
-    </ul>
+    <p>
+      A wrapper around the html5lib library for sanitizing HTML.
+    </p>
+    <h3>GET requests</h3>
+    <p>
+      The <code><strong>url</strong></code> parameter can be used to refer to a page of HTML content to be sanitized.  Examples:
+    </p>
     <ul>
       <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/clean.html">/whitelist?url=http://example.com/clean.html</a></li>
-      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/clean.html&json=1">/whitelist?url=http://example.com/clean.html&json=1</a></li>
-      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/clean.html&callback=foo">/whitelist?url=http://example.com/clean.html&callback=foo</a></li>
-    </ul>
-    <ul>
       <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/dirty.html">/whitelist?url=http://example.com/dirty.html</a></li>
-      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/dirty.html&json=1">/whitelist?url=http://example.com/dirty.html&json=1</a></li>
-      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/dirty.html&callback=foo">/whitelist?url=http://example.com/dirty.html&callback=foo</a></li>
     </ul>
+    <p>
+      Alternatively, the <code><strong>content</strong></code> parameter can be used to include the HTML in the <code>GET</code> request itself. Examples:
+    </p>
     <ul>
-      <li><code>POST</code> /whitelist <em>(html goes in the post body)</em></li>
-      <li><code>POST</code> /whitelist&json=1</li>
-      <li><code>POST</code> /whitelist&callback=foo</li>
+      <li><code>GET</code> <a href="/whitelist?content=%3Cp%3Esafe+html%3C/p%3E">/whitelist?content=%3Cp%3Esafe+html%3C/p%3E</a></li>
+      <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3Escary+html%3C/script%3E">/whitelist?content=%3Cscript%3Escary+html%3C/script%3E</a></li>
     </ul>
+    <p>
+      The <code><strong>json</strong></code> parameter will wrap the
+      response in a JSON dictionary under the key <code>html</code>.  Examples:
+    </p>
+    <ul>
+      <li><code>GET</code> <a href="/whitelist?content=%3Cp%3Esafe+html%3C/p%3E&json=1">/whitelist?content=%3Cp%3Esafe+html%3C/p%3E&json=1</a></li>
+      <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3Escary+html%3C/script%3E&json=1">/whitelist?content=%3Cscript%3Escary+html%3C/script%3E&json=1</a></li>
+    </ul>
+    <p>
+      The <code><strong>callback=<em>foo</em></strong></code>
+      parameter will enable JSONP-style callbacks, suitable for use
+      within a &lt;script src&gt; tag. Examples:
+    </p>
+    <ul>
+      <li><code>GET</code> <a href="/whitelist?content=%3Cp%3Esafe+html%3C/p%3E&callback=foo">/whitelist?content=%3Cp%3Esafe+html%3C/p%3E&callback=foo</a></li>
+      <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3Escary+html%3C/script%3E&callback=foo">/whitelist?content=%3Cscript%3Escary+html%3C/script%3E&callback=foo</a></li>
+    </ul>
+    <h3>POST requests</h3>
+    <p>
+      <code>POST</code> requests can be
+      either <code>multipart/form-data</code>
+      or <code>application/x-www-form-urlencoded</code> encoded.  If a
+      key named <code>content</code> is present then the value will
+      be sanitized.  If not, the entire request body will be sanitized.
+    </p>
+    <p>
+      <code>POST</code> requests also accept
+      the <code><strong>json</strong></code>
+      and <code><strong>callback</strong></code> parameters.
+    </p>
     <form action="/whitelist" method="post">
       <fieldset>
         <legend>Demonstration using POST</legend>
