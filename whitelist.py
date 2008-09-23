@@ -20,9 +20,9 @@ USAGE = '''<html><head><title>html-whitelist</html></head><body>
   <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html&json=1">/whitelist?url=http://example.com/dirty.html&json=1</a></li>
   <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html&callback=foo">/whitelist?url=http://example.com/dirty.html&callback=foo</a></li>
 
-  <li><code>POST</code> /whitelist <em>(post body contains arbitrary HTML)</em></li>
-  <li><code>POST</code> /whitelist&json=1 <em>(post body contains arbitrary HTML)</em></li>
-  <li><code>POST</code> /whitelist&callback=foo <em>(post body contains arbitrary HTML)</em></li>
+  <li><code>POST</code> /whitelist <em>(html goes in the post body)</em></li>
+  <li><code>POST</code> /whitelist&json=1</li>
+  <li><code>POST</code> /whitelist&callback=foo</li>
 </ul>
 <p><a href="http://appengine-html-whitelist.googlecode.com/">Source</a></p>
 </body></html>
