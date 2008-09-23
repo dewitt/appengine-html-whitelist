@@ -2,6 +2,6 @@ NOTICE
 
 The html5lib library (http://html5lib.googlecode.com/) is used under the terms of the MIT License and is copyright the original authors.  See html5lib/LICENSE for details. 
 
-The simplejson library is used under the terms of the MIT license and is copyright Bob Ippolito.  See simplejson/LICENSE.txt for details.
+The simplejson library (http://simplejson.googlecode.com) is used under the terms of the MIT license and is copyright Bob Ippolito.  See simplejson/LICENSE.txt for details.
 
 The html-whitelist code is made available under the Apache License and is copyright DeWitt Clinton.
