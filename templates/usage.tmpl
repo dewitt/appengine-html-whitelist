@@ -16,14 +16,14 @@
       <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&callback=foo">/whitelist?content=%3Cscript%3EThis+should+be+escaped%3C/script%3E&callback=foo</a></li>
     </ul>
     <ul>
-      <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html">/whitelist?url=http://example.com/clean.html</a></li>
-      <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html&json=1">/whitelist?url=http://example.com/clean.html&json=1</a></li>
-      <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html&callback=foo">/whitelist?url=http://example.com/clean.html&callback=foo</a></li>
+      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/clean.html">/whitelist?url=http://example.com/clean.html</a></li>
+      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/clean.html&json=1">/whitelist?url=http://example.com/clean.html&json=1</a></li>
+      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/clean.html&callback=foo">/whitelist?url=http://example.com/clean.html&callback=foo</a></li>
     </ul>
     <ul>
-      <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html">/whitelist?url=http://example.com/dirty.html</a></li>
-      <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html&json=1">/whitelist?url=http://example.com/dirty.html&json=1</a></li>
-      <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html&callback=foo">/whitelist?url=http://example.com/dirty.html&callback=foo</a></li>
+      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/dirty.html">/whitelist?url=http://example.com/dirty.html</a></li>
+      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/dirty.html&json=1">/whitelist?url=http://example.com/dirty.html&json=1</a></li>
+      <li><code>GET</code> <a href="/whitelist?url={{ examples_url }}/dirty.html&callback=foo">/whitelist?url=http://example.com/dirty.html&callback=foo</a></li>
     </ul>
     <ul>
       <li><code>POST</code> /whitelist <em>(html goes in the post body)</em></li>

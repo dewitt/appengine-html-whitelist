@@ -17,13 +17,16 @@ from html5lib import sanitizer
 
 TEMPLATE_DIR = 'templates'
 
+EXAMPLES_URL = 'http://appengine-html-whitelist.googlecode.com/svn/trunk/examples'
+
 
 class Usage(webapp.RequestHandler):
   """Prints usage information in response to requests to '/'."""
   def get(self):
     self.response.headers['Content-Type'] = 'text/html'
     path = os.path.join(os.path.dirname(__file__), TEMPLATE_DIR, 'usage.tmpl')
-    self.response.out.write(template.render(path, {}))
+    template_vars = {'examples_url': EXAMPLES_URL}
+    self.response.out.write(template.render(path, template_vars))
 
 
 class HtmlWhitelist(webapp.RequestHandler):
