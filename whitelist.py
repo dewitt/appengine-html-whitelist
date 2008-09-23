@@ -34,22 +34,29 @@ class HtmlWhitelist(webapp.RequestHandler):
 
   def get(self):
     """Whitelists the content referred to by the 'url' param."""
-    content = self.request.get('content')
+    content = self.request.get('content', default_value=None)
     if not content:
-      url = self.request.get('url')
+      url = self.request.get('url', default_value=None)
       if not url:
         return self._error('either content or url required')
       content = self._get_url(url)
-    as_json = self.request.get('json')
-    json_callback = self.request.get('callback')
+    as_json = self._get_bool('json')
+    json_callback = self.request.get('callback', default_value=None)
     content = self._whitelist(content)
     self._print(content, as_json, json_callback)
 
   def post(self):
     """Whitelists the content included in the post body."""
-    content = self._whitelist(self.request.body)
-    as_json = self.request.get('json')
-    json_callback = self.request.get('callback')
+    # If a 'content' element is present in either 'multipart/form-data'
+    # or 'application/x-www-form-urlencoded' encodings, use that as the content
+    # to be sanitized, otherwise use the entire body
+    body = self._whitelist(self.request.body)
+    content = self.request.get('content', default_value=None)
+    if content is None:
+      content = body
+    as_json = self._get_bool('json')
+    json_callback = self.request.get('callback', default_value=None)
+    content = self._whitelist(content)
     self._print(content, as_json, json_callback)
 
   def _print(self, content, as_json, json_callback):
@@ -104,6 +111,16 @@ class HtmlWhitelist(webapp.RequestHandler):
       if not memcache.add(url, content, 60):
         logging.error("Memcache set of %s failed." % url)
     return content
+
+  def _get_bool(self, key):
+    """Return True if the request parameter is set to anything true-like.
+
+    Args:
+      key: The query parameter name
+    """
+    value = self.request.get(key, default_value=None)
+    return value and value != '0' and value.lower() != 'false'
+
 
 application = webapp.WSGIApplication([('/whitelist/?', HtmlWhitelist),
                                       ('/', Usage)],

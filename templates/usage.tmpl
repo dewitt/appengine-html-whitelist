@@ -30,6 +30,28 @@
       <li><code>POST</code> /whitelist&json=1</li>
       <li><code>POST</code> /whitelist&callback=foo</li>
     </ul>
+    <form action="/whitelist" method="post">
+      <fieldset>
+        <legend>Demonstration using POST</legend>
+        <p>
+          <label for="content">Enter HTML to be sanitized:</label>
+          <br>
+          <textarea name="content" cols="80" rows="8"></textarea>
+        </p>
+        <p>
+          <label for="content">Select the format of the response:</label>
+          <br>
+          <input type="radio" name="json" value="0" checked="1">html
+          <br>
+          <input type="radio" name="json" value="1">json
+        </p>
+        <p>
+          <input type="submit" value="Submit">
+        </p>
+      </fieldset>
+    </form>
+
+
     <p><a href="http://appengine-html-whitelist.googlecode.com/">Source</a></p>
   </body>
 </html>
