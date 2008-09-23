@@ -7,19 +7,26 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 import html5lib
-from html5lib import sanitizer
 from html5lib import treebuilders, treewalkers, serializer
+from html5lib import sanitizer
 
+USAGE = '''<html><head><title>html-whitelist</html></head><body>
+<h1>html-whitelist</h1>
+<p>Wrapper around the html5lib sanitizer:</p>
+<ul>
+  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/clean.html">/whitelist?url=http://example.com/clean.html</a></li>
+  <li><code>GET</code> <a href="/whitelist?url=http://appengine-html-whitelist.googlecode.com/svn/trunk/examples/dirty.html">/whitelist?url=http://example.com/dirty.html</a></li>
+  <li><code>POST</code> /whitelist <em>(post body contains arbitrary HTML)</em></li>
+</ul>
+<p><a href="http://appengine-html-whitelist.googlecode.com/">Source</a></p>
+</body></html>
+'''
 
 class Usage(webapp.RequestHandler):
   """Prints usage information in response to requests to '/'."""
   def get(self):
-    self.response.headers['Content-Type'] = 'text/plain'
-    self.response.out.write('''Usage:
-
-   GET  /whitelist?url=http://www.example.com/
-   POST /whitelist  (post body contains arbitrary HTML)
-''')
+    self.response.headers['Content-Type'] = 'text/html'
+    self.response.out.write(USAGE)
 
 
 class HtmlWhitelist(webapp.RequestHandler):
@@ -37,7 +44,7 @@ class HtmlWhitelist(webapp.RequestHandler):
       if result.status_code != 200:
         return self._error('could not fetch %s' % url)
       content = result.content
-      if not memcache.add(url, content):
+      if not memcache.add(url, content, 60):
         logging.error("Memcache set of %s failed." % url)
     self.response.out.write(self._whitelist(content))
 
@@ -65,12 +72,9 @@ class HtmlWhitelist(webapp.RequestHandler):
     """
     parser = html5lib.HTMLParser(tokenizer=sanitizer.HTMLSanitizer,
                                  tree=treebuilders.getTreeBuilder("dom"))
-    dom_tree = parser.parse(content)
-    walker = treewalkers.getTreeWalker('dom')
-    stream = walker(dom_tree)
-    writer = serializer.htmlserializer.HTMLSerializer(omit_optional_tags=False,
-                                                      strip_whitespace=True)
-    return writer.render(stream)
+    tree = parser.parse(content)
+    body = tree.getElementsByTagName('body')[0]
+    return ''.join([elem.toxml() for elem in body.childNodes])
     
 
 application = webapp.WSGIApplication([('/whitelist/?', HtmlWhitelist),
