@@ -43,14 +43,7 @@ class HtmlWhitelist(webapp.RequestHandler):
     url = self.request.get('url')
     if not url:
       return self._error('url required')
-    content = memcache.get(url)
-    if content is None:
-      result = urlfetch.fetch(url)
-      if result.status_code != 200:
-        return self._error('could not fetch %s' % url)
-      content = result.content
-      if not memcache.add(url, content, 60):
-        logging.error("Memcache set of %s failed." % url)
+    content = self._get_url(url)
     as_json = self.request.get('json')
     json_callback = self.request.get('callback')
     content = self._whitelist(content)
@@ -82,9 +75,11 @@ class HtmlWhitelist(webapp.RequestHandler):
     Args:
       error: The plain text error message.
     """
+    logging.error(message)
     self.response.headers['Content-Type'] = 'text/plain'
     self.response.out.write(message)
     self.response.out.write("\n")
+    return None
 
   def _whitelist(self, content):
     """Runs the content through an HTML parser and filter.
@@ -98,6 +93,21 @@ class HtmlWhitelist(webapp.RequestHandler):
     body = tree.getElementsByTagName('body')[0]
     return ''.join([elem.toxml() for elem in body.childNodes])
     
+  def _get_url(self, url):
+    """Retrieves a URL and caches the results.
+
+    Args:
+      url: A url to be fetched
+    """
+    content = memcache.get(url)
+    if content is None:
+      result = urlfetch.fetch(url)
+      if result.status_code != 200:
+        return self._error('could not fetch %s' % url)
+      content = result.content
+      if not memcache.add(url, content, 60):
+        logging.error("Memcache set of %s failed." % url)
+    return content
 
 application = webapp.WSGIApplication([('/whitelist/?', HtmlWhitelist),
                                       ('/', Usage)], 
