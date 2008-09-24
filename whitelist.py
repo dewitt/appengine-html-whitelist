@@ -32,8 +32,8 @@ class AtwoodSantizer(sanitizer.HTMLSanitizer):
   ]
 
 
-SANITIZING_TOKENIZERS = { 'default': sanitizer.HTMLSanitizer,
-                          'atwood': AtwoodSantizer}
+SANITIZING_TOKENIZERS = {'default': sanitizer.HTMLSanitizer,
+                         'atwood': AtwoodSantizer}
 
 
 class ReportableError(Exception):
