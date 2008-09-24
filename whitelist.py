@@ -20,7 +20,7 @@ TEMPLATE_DIR = 'templates'
 EXAMPLES_URL = 'http://appengine-html-whitelist.googlecode.com/svn/trunk/examples'
 
 
-class AtwoodSantizer(sanitizer.HTMLSanitizer):
+class AtwoodSanitizer(sanitizer.HTMLSanitizer):
   """A santizer that allows only a small subset of elements through.
 
   See the following blog post for details:
@@ -33,7 +33,7 @@ class AtwoodSantizer(sanitizer.HTMLSanitizer):
 
 
 SANITIZING_TOKENIZERS = {'default': sanitizer.HTMLSanitizer,
-                         'atwood': AtwoodSantizer}
+                         'atwood': AtwoodSanitizer}
 
 
 class ReportableError(Exception):
@@ -174,7 +174,6 @@ class HtmlWhitelist(webapp.RequestHandler):
     """
     value = self.request.get(key, default_value=None)
     return value and value != '0' and value.lower() != 'false'
-
 
 
 application = webapp.WSGIApplication([('/whitelist/?', HtmlWhitelist),
