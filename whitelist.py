@@ -20,6 +20,22 @@ TEMPLATE_DIR = 'templates'
 EXAMPLES_URL = 'http://appengine-html-whitelist.googlecode.com/svn/trunk/examples'
 
 
+class AtwoodSantizer(sanitizer.HTMLSanitizer):
+  """A santizer that allows only a small subset of elements through.
+
+  See the following blog post for details:
+    http://refactormycode.com/codes/333-sanitize-html
+  """
+  allowed_elements = [
+    'a', 'b', 'blockquote', 'br', 'code', 'em', 'h1', 'h2',  'h3', 'hr', 'i', 
+    'img', 'li', 'ol', 'p', 'pre', 's', 'sub', 'sup', 'strike', 'strong', 'ul'
+  ]
+
+
+SANITIZING_TOKENIZERS = { 'default': sanitizer.HTMLSanitizer,
+                          'atwood': AtwoodSantizer}
+
+
 class ReportableError(Exception):
   """A class of exceptions that should be shown to the user."""
   message = None
@@ -63,7 +79,8 @@ class HtmlWhitelist(webapp.RequestHandler):
       content = self._get_url(url)
     as_json = self._get_bool('json')
     json_callback = self.request.get('callback', default_value=None)
-    content = self._whitelist(content)
+    mode = self.request.get('mode', default_value='default')
+    content = self._whitelist(content, mode)
     self._print(content, as_json, json_callback)
 
   def post(self):
@@ -71,13 +88,14 @@ class HtmlWhitelist(webapp.RequestHandler):
     # If a 'content' element is present in either 'multipart/form-data'
     # or 'application/x-www-form-urlencoded' encodings, use that as the content
     # to be sanitized, otherwise use the entire body
-    body = self._whitelist(self.request.body)
+    body = self.request.body
     content = self.request.get('content', default_value=None)
     if content is None:
       content = body
     as_json = self._get_bool('json')
     json_callback = self.request.get('callback', default_value=None)
-    content = self._whitelist(content)
+    mode = self.request.get('mode', default_value='default')
+    content = self._whitelist(content, mode)
     self._print(content, as_json, json_callback)
 
   def handle_exception(self, exception, debug_mode):
@@ -115,13 +133,18 @@ class HtmlWhitelist(webapp.RequestHandler):
     self.response.out.write(message)
     self.response.out.write("\n")
 
-  def _whitelist(self, content):
+  def _whitelist(self, content, mode):
     """Runs the content through an HTML parser and filter.
 
     Args:
       content: The content to be whitelisted.
+      mode: The name of the sanitizer to use.
     """
-    parser = html5lib.HTMLParser(tokenizer=sanitizer.HTMLSanitizer,
+    try:
+      sanitizing_tokenizer = SANITIZING_TOKENIZERS[mode]
+    except KeyError:
+      raise UserError("Unknown mode '%s'." % mode)
+    parser = html5lib.HTMLParser(tokenizer=sanitizing_tokenizer,
                                  tree=treebuilders.getTreeBuilder("dom"))
     tree = parser.parse(content)
     body = tree.getElementsByTagName('body')[0]

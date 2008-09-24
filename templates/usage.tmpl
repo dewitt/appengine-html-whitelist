@@ -39,6 +39,14 @@
       <li><code>GET</code> <a href="/whitelist?content=%3Cp%3Esafe+html%3C/p%3E&callback=foo">/whitelist?content=%3Cp%3Esafe+html%3C/p%3E&callback=foo</a></li>
       <li><code>GET</code> <a href="/whitelist?content=%3Cscript%3Escary+html%3C/script%3E&callback=foo">/whitelist?content=%3Cscript%3Escary+html%3C/script%3E&callback=foo</a></li>
     </ul>
+    <p>
+      The <code><strong>mode</strong></code> parameter will swap in alternative sanitizers.  At this time, only the default permissive-but-safe <code>default</code> mode, and the
+      restrictive <code>atwood</code> mode (see <a href="http://refactormycode.com/codes/333-sanitize-html">here</a>) are supported.  Examples:
+    </p>
+    <ul>
+      <li><code>GET</code> <a href="/whitelist?content=%3Cp%3E%3Ccite%3EAnathem%3C/cite%3E by Neal Stephenson%3C/p%3E&&mode=default">/whitelist?content=%3Cp%3E%3Ccite%3EAnathem%3C/cite%3E by Neal Stephenson%3C/p%3E&&mode=default</a></li>
+      <li><code>GET</code> <a href="/whitelist?content=%3Cp%3E%3Ccite%3EAnathem%3C/cite%3E by Neal Stephenson%3C/p%3E&&mode=atwood">/whitelist?content=%3Cp%3E%3Ccite%3EAnathem%3C/cite%3E by Neal Stephenson%3C/p%3E&&mode=atwood</a></li>
+    </ul>
     <h3>POST requests</h3>
     <p>
       <code>POST</code> requests can be
@@ -58,7 +66,7 @@
         <p>
           <label for="content">Enter HTML to be sanitized:</label>
           <br>
-          <textarea name="content" cols="80" rows="8">The &lt;strong&gt;quick&lt;/strong&gt; brown fox &lt;script src="http://evil.com"&gt; jumps over the &lt;em&gt;lazy&lt;/em&gt; dog.</textarea>
+          <textarea name="content" cols="80" rows="8">The &lt;strong&gt;quick&lt;/strong&gt; brown fox &lt;script src="http://evil.com"&gt; jumps &lt;kbd&gt;over&lt;/kbd&gt; the &lt;em&gt;lazy&lt;/em&gt; dog.</textarea>
         </p>
         <p>
           <label for="content">Select a response format:</label>
@@ -66,6 +74,13 @@
           <input type="radio" name="json" value="0" checked="1">html
           <br>
           <input type="radio" name="json" value="1">json
+        </p>
+        <p>
+          <label for="mode">Select a mode:</label>
+          <br>
+          <input type="radio" name="mode" value="default" checked="1">default
+          <br>
+          <input type="radio" name="mode" value="atwood">atwood
         </p>
         <p>
           <input type="submit" value="Submit">
