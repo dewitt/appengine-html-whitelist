@@ -20,6 +20,27 @@ TEMPLATE_DIR = 'templates'
 EXAMPLES_URL = 'http://appengine-html-whitelist.googlecode.com/svn/trunk/examples'
 
 
+class ReportableError(Exception):
+  """A class of exceptions that should be shown to the user."""
+  message = None
+
+  def __init__(self, message):
+    """Constructs a new ReportableError.
+
+    Args:
+      message: The message to be logged and displayed to the user.
+    """
+    self.message = message
+
+
+class UserError(ReportableError):
+  """An 400 error caused by user behavior."""
+
+
+class ServerError(ReportableError):
+  """An 500 error caused by the server."""
+
+
 class Usage(webapp.RequestHandler):
   """Prints usage information in response to requests to '/'."""
   def get(self):
@@ -38,7 +59,7 @@ class HtmlWhitelist(webapp.RequestHandler):
     if not content:
       url = self.request.get('url', default_value=None)
       if not url:
-        return self._error('either content or url required')
+        raise UserError("Either a 'content' or 'url' parameter is required.")
       content = self._get_url(url)
     as_json = self._get_bool('json')
     json_callback = self.request.get('callback', default_value=None)
@@ -59,6 +80,18 @@ class HtmlWhitelist(webapp.RequestHandler):
     content = self._whitelist(content)
     self._print(content, as_json, json_callback)
 
+  def handle_exception(self, exception, debug_mode):
+    if isinstance(exception, UserError):
+      logging.error('ServerError: %s' % exception.message)
+      self.error(400)
+      self._print_error(exception.message)
+    elif isinstance(exception, ServerError):
+      logging.error('SeverError: %s' % exception.message)
+      self.error(500)
+      self._print_error(exception.message)
+    else:
+      super(HtmlWhitelist, self).handle_exception(exception, debug_mode)
+
   def _print(self, content, as_json, json_callback):
     if json_callback:
       mime_type = 'text/javascript'
@@ -72,17 +105,15 @@ class HtmlWhitelist(webapp.RequestHandler):
     self.response.out.write(content)
     self.response.out.write("\n")
 
-  def _error(self, message):
+  def _print_error(self, message):
     """Prints an error message as type text/plain.
 
     Args:
       error: The plain text error message.
     """
-    logging.error(message)
     self.response.headers['Content-Type'] = 'text/plain'
     self.response.out.write(message)
     self.response.out.write("\n")
-    return None
 
   def _whitelist(self, content):
     """Runs the content through an HTML parser and filter.
@@ -106,7 +137,7 @@ class HtmlWhitelist(webapp.RequestHandler):
     if content is None:
       result = urlfetch.fetch(url)
       if result.status_code != 200:
-        return self._error('could not fetch %s' % url)
+        raise ServerError("Could not fetch url '%s'." % url)
       content = result.content
       if not memcache.add(url, content, 60):
         logging.error("Memcache set of %s failed." % url)
@@ -120,6 +151,7 @@ class HtmlWhitelist(webapp.RequestHandler):
     """
     value = self.request.get(key, default_value=None)
     return value and value != '0' and value.lower() != 'false'
+
 
 
 application = webapp.WSGIApplication([('/whitelist/?', HtmlWhitelist),
