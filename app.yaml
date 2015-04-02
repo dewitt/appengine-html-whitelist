@@ -1,4 +1,4 @@
-application: html-whitelist
+application: html-whitelist-hrd
 version: 1
 runtime: python
 api_version: 1
